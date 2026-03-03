@@ -2,6 +2,14 @@ export type Format = 'T1' | 'T2' | 'S1' | 'S2';
 export type Channel = 'teacher' | 'student';
 export type ScriptStatus = 'draft' | 'selected' | 'qa';
 
+export type HookVibe = 'direct' | 'conversational' | 'spicy';
+
+export interface HookVariants {
+  direct: string;
+  conversational: string;
+  spicy: string;
+}
+
 export interface T1Script {
   id: string;
   format: 'T1';
@@ -14,6 +22,10 @@ export interface T1Script {
   score?: number;
   status: ScriptStatus;
   createdAt: string;
+  // Optional hook A/B test fields (applied during pack step)
+  hook_original?: string;
+  hook_vibe?: HookVibe;
+  hook_variants?: HookVariants;
 }
 
 export interface T2Script {
@@ -28,6 +40,9 @@ export interface T2Script {
   score?: number;
   status: ScriptStatus;
   createdAt: string;
+  hook_original?: string;
+  hook_vibe?: HookVibe;
+  hook_variants?: HookVariants;
 }
 
 export interface S1Script {
@@ -42,6 +57,9 @@ export interface S1Script {
   score?: number;
   status: ScriptStatus;
   createdAt: string;
+  hook_original?: string;
+  hook_vibe?: HookVibe;
+  hook_variants?: HookVariants;
 }
 
 export interface S2Script {
@@ -56,6 +74,9 @@ export interface S2Script {
   score?: number;
   status: ScriptStatus;
   createdAt: string;
+  hook_original?: string;
+  hook_vibe?: HookVibe;
+  hook_variants?: HookVariants;
 }
 
 export type Script = T1Script | T2Script | S1Script | S2Script;

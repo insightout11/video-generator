@@ -19,6 +19,28 @@ export interface PackOptions {
   voiceId?: string;
 }
 
+function cleanHook(hook: string): string {
+  return hook.trim().replace(/\s+/g, ' ').replace(/\?+$/, '').trim();
+}
+
+function getHookVariants(hook: string) {
+  const base = cleanHook(hook);
+  const conversational = hook.trim();
+  return {
+    direct: base.endsWith('.') ? base : base + '.',
+    conversational,
+    spicy: `Stop this: ${cleanHook(conversational)}.`,
+  };
+}
+
+function chooseHookVibe(): 'direct' | 'conversational' | 'spicy' {
+  const env = (process.env.HOOK_VIBE || '').toLowerCase().trim();
+  if (env === 'direct' || env === 'conversational' || env === 'spicy') return env;
+  const day = Math.floor(Date.now() / 86_400_000);
+  const idx = day % 3;
+  return idx === 0 ? 'direct' : idx === 1 ? 'conversational' : 'spicy';
+}
+
 async function packScript(
   script: Script,
   channel: Channel,
@@ -27,20 +49,31 @@ async function packScript(
   const packDir = join(getPacksDir(opts.batch, channel), script.id);
   ensureDir(packDir);
 
+  // Apply hook vibe rotation at pack-time (A/B/C test)
+  const hook_variants = getHookVariants(script.hook);
+  const hook_vibe = chooseHookVibe();
+  const packedScript: Script = {
+    ...script,
+    hook_original: script.hook,
+    hook_vibe,
+    hook_variants,
+    hook: hook_variants[hook_vibe],
+  } as any;
+
   // script.json
-  writeJson(join(packDir, 'script.json'), script);
+  writeJson(join(packDir, 'script.json'), packedScript);
 
   // on_screen.txt
-  writeFileSync(join(packDir, 'on_screen.txt'), generateOnScreen(script), 'utf-8');
+  writeFileSync(join(packDir, 'on_screen.txt'), generateOnScreen(packedScript), 'utf-8');
 
   // captions.srt
-  writeFileSync(join(packDir, 'captions.srt'), generateSrt(script), 'utf-8');
+  writeFileSync(join(packDir, 'captions.srt'), generateSrt(packedScript), 'utf-8');
 
   // meta.json
-  writeJson(join(packDir, 'meta.json'), generateMeta(script, channel));
+  writeJson(join(packDir, 'meta.json'), generateMeta(packedScript, channel));
 
   // TTS: voice.mp3 or notes.md
-  const fullText = getScriptText(script);
+  const fullText = getScriptText(packedScript);
 
   if (opts.tts === 'elevenlabs') {
     try {
