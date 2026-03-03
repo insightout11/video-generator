@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import type { Script, BatchJson } from '../types.js';
 import { validateScript, scoreScript } from '../validators/script.js';
 import {
@@ -15,13 +16,52 @@ export interface SelectOptions {
   keepTeacher: number;
   keepStudent: number;
   qaSample: number;
+  autoReplaceLint?: 'none' | 'ollama';
+  lintThreshold?: 'low' | 'medium' | 'high';
+}
+
+type LintSeverity = 'none' | 'low' | 'medium' | 'high';
+
+interface LintResult {
+  ok: boolean;
+  issues: string[];
+  severity: LintSeverity;
+  suggested_edits: Record<string, unknown>;
+}
+
+function lintScriptFromFile(filePath: string): LintResult {
+  const nodeBin = process.execPath;
+  const lintScript = process.env.OLLAMA_LINT_SCRIPT || '/home/matt/clawd/ops/bin/ollama-lint-script.mjs';
+  const r = spawnSync(nodeBin, [lintScript, filePath], {
+    encoding: 'utf8',
+    env: process.env,
+    maxBuffer: 1024 * 1024,
+  });
+
+  if (r.status !== 0) {
+    const err = (r.stderr || r.stdout || '').trim();
+    return { ok: false, issues: [err || 'lint failed'], severity: 'high', suggested_edits: {} };
+  }
+
+  try {
+    return JSON.parse((r.stdout || '').trim()) as LintResult;
+  } catch {
+    return { ok: false, issues: ['lint returned non-JSON output'], severity: 'high', suggested_edits: {} };
+  }
+}
+
+function severityRank(s: LintSeverity): number {
+  return s === 'none' ? 0 : s === 'low' ? 1 : s === 'medium' ? 2 : 3;
 }
 
 function selectChannel(
   scripts: Script[],
   keep: number,
   qaSample: number,
-  label: string
+  label: string,
+  batchId: string,
+  autoReplaceLint: 'none' | 'ollama',
+  lintThreshold: LintSeverity
 ): { selected: Script[]; qa: Script[]; total: number; valid: number } {
   const total = scripts.length;
 
@@ -56,11 +96,42 @@ function selectChannel(
   }
 
   // Mark status as selected and annotate score
-  const selectedScripts: Script[] = topN.map(({ script, score }) => ({
+  let selectedScripts: Script[] = topN.map(({ script, score }) => ({
     ...script,
     status: 'selected' as const,
     score,
   }));
+
+  // Optional: auto-replace scripts that fail Ollama lint with next-best candidates
+  if (autoReplaceLint === 'ollama' && valid.length > selectedScripts.length) {
+    const threshold = severityRank(lintThreshold);
+    const candidates = valid.slice(selectedScripts.length); // next-best
+    let replaced = 0;
+    for (let i = 0; i < selectedScripts.length; i++) {
+      const s = selectedScripts[i];
+      const draftPath = join(getBatchDir(batchId), label, 'drafts', `${s.id}.json`);
+      const lint = lintScriptFromFile(draftPath);
+      if (severityRank(lint.severity) >= threshold) {
+        const next = candidates.shift();
+        if (!next) break;
+
+        console.warn(
+          `  [${s.id}] lint=${lint.severity} → replacing with [${next.script.id}] (next-best)`
+        );
+
+        selectedScripts[i] = {
+          ...next.script,
+          status: 'selected' as const,
+          score: next.score,
+        };
+        replaced++;
+      }
+    }
+
+    if (replaced > 0) {
+      console.log(`  ${label}: auto-replaced ${replaced} script(s) based on lint threshold=${lintThreshold}`);
+    }
+  }
 
   // QA sample
   const qaCount = qaSample > 0 ? Math.max(1, Math.floor(topN.length * qaSample)) : 0;
@@ -92,8 +163,11 @@ export async function runSelect(opts: SelectOptions): Promise<void> {
   const teacherDrafts = readDraftScripts(batch, 'teacher');
   const studentDrafts = readDraftScripts(batch, 'student');
 
-  const teacherResult = selectChannel(teacherDrafts, keepTeacher, qaSample, 'teacher');
-  const studentResult = selectChannel(studentDrafts, keepStudent, qaSample, 'student');
+  const autoReplaceLint = opts.autoReplaceLint ?? 'none';
+  const lintThreshold = opts.lintThreshold ?? 'medium';
+
+  const teacherResult = selectChannel(teacherDrafts, keepTeacher, qaSample, 'teacher', batch, autoReplaceLint, lintThreshold);
+  const studentResult = selectChannel(studentDrafts, keepStudent, qaSample, 'student', batch, autoReplaceLint, lintThreshold);
 
   // Write selected scripts
   for (const s of teacherResult.selected) {

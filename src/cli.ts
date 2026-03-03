@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import { runGenerate } from './commands/generate.js';
 import { runSelect } from './commands/select.js';
 import { runPack } from './commands/pack.js';
+import { runLint } from './commands/lint.js';
 
 const program = new Command();
 
@@ -41,17 +42,32 @@ program
   .option('--keepTeacher <n>', 'Number of teacher scripts to keep', '3')
   .option('--keepStudent <n>', 'Number of student scripts to keep', '3')
   .option('--qaSample <f>', 'Fraction of selected scripts to copy to QA (0–1)', '0')
-  .action(async (opts: { batch: string; keepTeacher: string; keepStudent: string; qaSample: string }) => {
+  .option('--autoReplaceLint <mode>', 'Auto-replace scripts that fail Ollama lint: none | ollama', 'none')
+  .option('--lintThreshold <t>', 'Lint severity to trigger replace: low | medium | high', 'medium')
+  .action(async (opts: { batch: string; keepTeacher: string; keepStudent: string; qaSample: string; autoReplaceLint: string; lintThreshold: string }) => {
     const qaSample = parseFloat(opts.qaSample);
     if (isNaN(qaSample) || qaSample < 0 || qaSample > 1) {
       console.error('--qaSample must be a number between 0 and 1');
       process.exit(1);
     }
+    const autoReplaceLint = opts.autoReplaceLint as 'none' | 'ollama';
+    if (autoReplaceLint !== 'none' && autoReplaceLint !== 'ollama') {
+      console.error('--autoReplaceLint must be none|ollama');
+      process.exit(1);
+    }
+    const lintThreshold = opts.lintThreshold as 'low' | 'medium' | 'high';
+    if (lintThreshold !== 'low' && lintThreshold !== 'medium' && lintThreshold !== 'high') {
+      console.error('--lintThreshold must be low|medium|high');
+      process.exit(1);
+    }
+
     await runSelect({
       batch: opts.batch,
       keepTeacher: parseInt(opts.keepTeacher, 10),
       keepStudent: parseInt(opts.keepStudent, 10),
       qaSample,
+      autoReplaceLint,
+      lintThreshold,
     });
   });
 
@@ -69,6 +85,21 @@ program
       process.exit(1);
     }
     await runPack({ batch: opts.batch, tts, voiceId: opts.voiceId });
+  });
+
+// ── lint ──────────────────────────────────────────────────────────────────────
+program
+  .command('lint')
+  .description('Run local Ollama lint (taste/engagement QA) on selected scripts')
+  .requiredOption('--batch <id>', 'Batch identifier')
+  .option('--channel <c>', 'teacher | student | both', 'both')
+  .action(async (opts: { batch: string; channel: string }) => {
+    const c = opts.channel as 'teacher' | 'student' | 'both';
+    if (c !== 'teacher' && c !== 'student' && c !== 'both') {
+      console.error('--channel must be teacher|student|both');
+      process.exit(1);
+    }
+    await runLint({ batch: opts.batch, channel: c });
   });
 
 program.parseAsync(process.argv).catch((err: unknown) => {
