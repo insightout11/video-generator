@@ -25,14 +25,18 @@ function makeT2(overrides: Partial<T2Script> = {}): T2Script {
     id: 'T2-0001',
     format: 'T2',
     batch: 'test',
-    hook: 'This classroom activity gets every single student speaking.',
-    setup: 'Most teachers use pair work, but pairs leave half the class completely idle.',
-    after: [
-      'Signal students to submit one sentence before the countdown ends.',
-      'Lock all responses when the timer reaches zero.',
-      'Reveal every answer to the whole class at once.',
+    hook: 'Same activity. Two outcomes.',
+    before: [
+      'One student answers at a time.',
+      'Teacher reacts immediately each turn.',
+      'Everyone else waits and disengages.',
     ],
-    closer: 'Simultaneous responses eliminate all dead waiting time.',
+    after: [
+      'Everyone submits before the countdown ends.',
+      'Lock all responses at zero with a hard stop.',
+      'Reveal answers simultaneously, then discuss two highlights.',
+    ],
+    closer: 'Don’t improve instructions. Improve mechanics.',
     estimatedDuration: 0,
     status: 'draft',
     createdAt: new Date().toISOString(),
@@ -45,10 +49,10 @@ function makeS1(overrides: Partial<S1Script> = {}): S1Script {
     id: 'S1-0001',
     format: 'S1',
     batch: 'test',
-    hook: 'I used to freeze every time a teacher asked me a question.',
-    struggle: 'My brain went completely blank and I would just say I do not know.',
-    solution: 'I started practicing with fifteen-second response windows at home every night.',
-    result: 'Now I answer confidently in class every single time without hesitation.',
+    hook: 'If you freeze in English, say this.',
+    line: 'Give me a second—I’m thinking about my answer.',
+    variants: ['Let me think for a moment.', 'Good question—let me think.'],
+    end: 'Keep the conversation moving in real life, even when you feel stuck.',
     estimatedDuration: 0,
     status: 'draft',
     createdAt: new Date().toISOString(),
@@ -61,10 +65,10 @@ function makeS2(overrides: Partial<S2Script> = {}): S2Script {
     id: 'S2-0001',
     format: 'S2',
     batch: 'test',
-    hook: 'I used to think speaking fast meant speaking really well.',
-    mistake: 'I rushed through every sentence to sound fluent and skipped all the important connectors.',
-    correction: 'Slow down and use connecting words like however, although, and meanwhile between your ideas.',
-    tip: 'Record yourself speaking for thirty seconds each day and listen back for missing connectors.',
+    hook: 'Want better conversations? Ask this.',
+    they_say: 'I watched a movie last night.',
+    followups: ['What was it about?', 'What did you like about it?', 'Would you recommend it to a friend?'],
+    end: 'Pick one question and ask it today.',
     estimatedDuration: 0,
     status: 'draft',
     createdAt: new Date().toISOString(),
@@ -146,6 +150,7 @@ describe('T2 validation', () => {
   });
 
   it('fails when after array is empty', () => {
+    // @ts-expect-error forcing invalid shape for test
     const result = validateScript(makeT2({ after: [] }));
     expect(result.valid).toBe(false);
   });
@@ -159,8 +164,8 @@ describe('S1 validation', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('fails when struggle is empty', () => {
-    const result = validateScript(makeS1({ struggle: '' }));
+  it('fails when line is empty', () => {
+    const result = validateScript(makeS1({ line: '' }));
     expect(result.valid).toBe(false);
   });
 });
@@ -171,8 +176,8 @@ describe('S2 validation', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('fails when tip is empty', () => {
-    const result = validateScript(makeS2({ tip: '' }));
+  it('fails when end is empty', () => {
+    const result = validateScript(makeS2({ end: '' }));
     expect(result.valid).toBe(false);
   });
 });

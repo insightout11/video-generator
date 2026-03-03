@@ -40,8 +40,11 @@ export function validateScript(script: Script): ValidationResult {
 
     case 'T2': {
       if (!script.hook.trim()) errors.push('hook is empty');
-      if (!script.setup.trim()) errors.push('setup is empty');
-      if (!script.after.length) errors.push('after array is empty');
+      if (!script.before?.length) errors.push('before array is empty');
+      script.before.forEach((b, i) => {
+        if (!b.trim()) errors.push(`before[${i}] is empty`);
+      });
+      if (!script.after?.length) errors.push('after array is empty');
       script.after.forEach((a, i) => {
         if (!a.trim()) errors.push(`after[${i}] is empty`);
       });
@@ -63,16 +66,22 @@ export function validateScript(script: Script): ValidationResult {
 
     case 'S1':
       if (!script.hook.trim()) errors.push('hook is empty');
-      if (!script.struggle.trim()) errors.push('struggle is empty');
-      if (!script.solution.trim()) errors.push('solution is empty');
-      if (!script.result.trim()) errors.push('result is empty');
+      if (!script.line.trim()) errors.push('line is empty');
+      if (!script.variants?.length) errors.push('variants array is empty');
+      script.variants.forEach((v, i) => {
+        if (!v.trim()) errors.push(`variants[${i}] is empty`);
+      });
+      if (!script.end.trim()) errors.push('end is empty');
       break;
 
     case 'S2':
       if (!script.hook.trim()) errors.push('hook is empty');
-      if (!script.mistake.trim()) errors.push('mistake is empty');
-      if (!script.correction.trim()) errors.push('correction is empty');
-      if (!script.tip.trim()) errors.push('tip is empty');
+      if (!script.they_say.trim()) errors.push('they_say is empty');
+      if (!script.followups?.length) errors.push('followups array is empty');
+      script.followups.forEach((f, i) => {
+        if (!f.trim()) errors.push(`followups[${i}] is empty`);
+      });
+      if (!script.end.trim()) errors.push('end is empty');
       break;
   }
 

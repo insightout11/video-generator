@@ -31,106 +31,122 @@ const T1_TEMPLATES: Array<Omit<T1Script, 'id' | 'batch' | 'estimatedDuration' | 
   },
 ];
 
-// ── T2 Templates (mechanic keywords required in after[] or closer phrase) ──
+// ── T2 Templates (before vs after; mechanic keywords required in after[] or closer phrase) ──
 
 const T2_TEMPLATES: Array<Omit<T2Script, 'id' | 'batch' | 'estimatedDuration' | 'score' | 'status' | 'createdAt' | 'format'>> = [
   {
-    hook: 'This classroom activity gets every single student speaking.',
-    setup: 'Most teachers use pair work, but pairs leave half the class completely idle. Try simultaneous group reveal instead.',
-    after: [
-      'Signal students to submit one sentence before the countdown ends.',
-      'Lock all responses when the timer reaches zero.',
-      'Reveal every answer to the whole class at once.',
+    hook: 'Same activity. Two different outcomes.',
+    before: [
+      'One student answers at a time.',
+      'Teacher reacts immediately.',
+      'Everyone else waits.',
     ],
-    closer: 'Simultaneous responses eliminate all dead waiting time.',
+    after: [
+      'Everyone submits before the countdown ends.',
+      'Lock all responses at zero.',
+      'Reveal answers simultaneously, then discuss two highlights.',
+    ],
+    closer: 'Don’t improve instructions. Improve mechanics.',
   },
   {
-    hook: 'Stop letting fast students completely dominate your class.',
-    setup: 'The first-to-answer problem destroys motivation for slower learners. Here is a fix that works.',
-    after: [
-      'Give a thirty-second countdown before accepting any responses.',
-      'Use lock then reveal to prevent all early answers.',
-      'Everyone submits their answer at exactly the same time.',
+    hook: 'Same discussion prompt. Two results.',
+    before: [
+      'Fast students answer first.',
+      'Others copy or stay silent.',
+      'Energy leaks while waiting.',
     ],
-    closer: 'Equal wait time creates equal opportunity for everyone.',
+    after: [
+      'Give a short countdown before any talking.',
+      'Lock then reveal to prevent early answers.',
+      'Spotlight 2–3 submissions after everyone commits.',
+    ],
+    closer: 'Design for participation, not volunteers.',
   },
   {
-    hook: 'This single technique doubled participation rates in my classroom.',
-    setup: 'When students know others can see their work immediately, they stop trying hard. Change that dynamic today.',
-    after: [
-      'Set a timer and require simultaneous responses from every student.',
-      'Use a random spotlight check on three different students.',
-      'Lock all answers before any feedback discussion begins.',
+    hook: 'Same vocabulary game. Two outcomes.',
+    before: [
+      'Long turns per student.',
+      'Low reps for most learners.',
+      'Attention drifts between turns.',
     ],
-    closer: 'Accountability mechanics transform classroom culture very quickly.',
+    after: [
+      'Run short timed rounds with a visible timer.',
+      'Everyone submits at the hard stop.',
+      'Reveal results together to keep momentum.',
+    ],
+    closer: 'Reps create engagement.',
   },
   {
-    hook: 'Why do your class discussions always fall completely flat?',
-    setup: 'Students wait to see what others say first before committing. Remove that option entirely.',
-    after: [
-      'Hard stop all talking when the countdown reaches zero.',
-      'Reveal responses simultaneously across the entire group.',
-      'Submit written summaries before any verbal discussion starts.',
+    hook: 'Same question. Two class cultures.',
+    before: [
+      'Students wait to see what others say.',
+      'Confident voices dominate.',
+      'Quiet students disappear.',
     ],
-    closer: 'Lock then reveal removes the copycat problem forever.',
+    after: [
+      'Require simultaneous responses from everyone.',
+      'Lock all answers before feedback.',
+      'Reveal across the group, then discuss patterns.',
+    ],
+    closer: 'Lock then reveal removes the copycat problem.',
   },
 ];
 
-// ── S1 Templates (student POV: struggle → solution story) ─────────────────
+// ── S1 Templates (conversation rescue line) ───────────────────────────────
 
 const S1_TEMPLATES: Array<Omit<S1Script, 'id' | 'batch' | 'estimatedDuration' | 'score' | 'status' | 'createdAt' | 'format'>> = [
   {
-    hook: 'I used to freeze every time a teacher asked me a question.',
-    struggle: 'My brain went completely blank and I would just say I do not know.',
-    solution: 'I started practicing with fifteen-second response windows at home every night.',
-    result: 'Now I answer confidently in class every single time without hesitation.',
+    hook: 'If you freeze in English, say this.',
+    line: 'Give me a second—I’m thinking about my answer.',
+    variants: ['Let me think for a moment.', 'Good question—let me think.'],
+    end: 'Keep the conversation moving, even when you feel stuck.',
   },
   {
-    hook: 'Speaking English in class felt completely impossible six months ago.',
-    struggle: 'I always translated everything in my head first and then lost the whole conversation.',
-    solution: 'I joined a study group where we timed responses and gave immediate honest feedback.',
-    result: 'My speaking speed improved dramatically within just three short weeks.',
+    hook: 'Don’t panic if you forget a word.',
+    line: 'How do you say ___ in English?',
+    variants: ['What’s the word for ___?', 'I mean the thing that ___.'],
+    end: 'Don’t stop talking.',
   },
   {
-    hook: 'Grammar mistakes used to destroy my confidence in every English class.',
-    struggle: 'Every time I opened my mouth, I second-guessed every single word I chose.',
-    solution: 'My teacher introduced short timed speaking rounds with absolutely zero corrections during speaking time.',
-    result: 'I stopped overthinking and started actually communicating much more clearly.',
+    hook: 'Need time to answer?',
+    line: 'That’s a good question—let me think.',
+    variants: ['Hmm—let me think about that.', 'Give me a moment.'],
+    end: 'Buy time. Then answer.',
   },
   {
-    hook: 'I was the quietest student in every single English class I attended.',
-    struggle: 'The fear of making mistakes in front of my classmates felt completely overwhelming.',
-    solution: 'My teacher used anonymous response cards so nobody knew who gave which answer at first.',
-    result: 'Once I knew no one could directly judge me, I started participating in every lesson.',
+    hook: 'If you didn’t hear them, say this.',
+    line: 'Sorry—could you repeat that?',
+    variants: ['Could you say that again, please?', 'I didn’t catch that—one more time?'],
+    end: 'Stay calm and keep going.',
   },
 ];
 
-// ── S2 Templates (student POV: mistake → correction tip) ─────────────────
+// ── S2 Templates (follow-up question engine) ─────────────────────────────
 
 const S2_TEMPLATES: Array<Omit<S2Script, 'id' | 'batch' | 'estimatedDuration' | 'score' | 'status' | 'createdAt' | 'format'>> = [
   {
-    hook: 'I used to think speaking fast meant speaking really well.',
-    mistake: 'I rushed through every sentence to sound fluent and skipped all the important connectors.',
-    correction: 'Slow down and use connecting words like however, although, and meanwhile between your ideas.',
-    tip: 'Record yourself speaking for thirty seconds each day and listen back for missing connectors.',
+    hook: 'Want better conversations? Ask this.',
+    they_say: 'I watched a movie last night.',
+    followups: ['What was it about?', 'What did you like about it?', 'Would you recommend it?'],
+    end: 'Pick one and try it.',
   },
   {
-    hook: 'The biggest mistake I ever made while learning English vocabulary.',
-    mistake: 'I memorized long word lists but never actually used those words in real sentences.',
-    correction: 'Learn every new word inside a full sentence with context, not just isolated definitions.',
-    tip: 'Write three brand-new sentences every single day using your new words in real situations.',
+    hook: 'Easy follow-ups that make you sound fluent.',
+    they_say: 'I’m learning English.',
+    followups: ['What’s your goal?', 'What’s the hardest part?', 'How do you practice?'],
+    end: 'Ask one today.',
   },
   {
-    hook: 'I corrected my classmates too much and they stopped practicing with me entirely.',
-    mistake: 'Constant corrections during speaking practice break natural flow and kill everyone motivation very fast.',
-    correction: 'Save all corrections for after the activity ends, never interrupt during active speaking practice time.',
-    tip: 'Write down errors quietly in your notebook and review together when the speaking round finishes.',
+    hook: 'Keep the conversation going with this.',
+    they_say: 'I went to Japan.',
+    followups: ['Where did you go?', 'What surprised you?', 'Would you go again?'],
+    end: 'Then listen.',
   },
   {
-    hook: 'Daily writing practice felt completely useless until I changed just one small thing.',
-    mistake: 'I only ever wrote when teachers assigned homework, never independently on my own.',
-    correction: 'Write something in English for five minutes every single morning without stopping to edit.',
-    tip: 'Even just three short sentences about your day builds fluency faster than any perfect essay.',
+    hook: 'Don’t know what to say next? Ask this.',
+    they_say: 'I started a new job.',
+    followups: ['How’s it going so far?', 'What do you do there?', 'What’s the best part?'],
+    end: 'One question is enough.',
   },
 ];
 

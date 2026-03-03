@@ -14,30 +14,33 @@ function t1OnScreen(s: T1Script): string {
 }
 
 function t2OnScreen(s: T2Script): string {
+  const beforeLines = s.before.map((b) => `- ${b}`).join('\n');
   const afterLines = s.after.map((a) => `- ${a}`).join('\n');
   return [
     section('HOOK', s.hook),
-    section('SETUP', s.setup),
+    section('BEFORE', beforeLines),
     section('AFTER', afterLines),
     section('CLOSER', s.closer),
   ].join('\n\n');
 }
 
 function s1OnScreen(s: S1Script): string {
+  const variantLines = s.variants.map((v) => `- ${v}`).join('\n');
   return [
     section('HOOK', s.hook),
-    section('STRUGGLE', s.struggle),
-    section('SOLUTION', s.solution),
-    section('RESULT', s.result),
+    section('LINE', s.line),
+    section('VARIANTS', variantLines),
+    section('END', s.end),
   ].join('\n\n');
 }
 
 function s2OnScreen(s: S2Script): string {
+  const followupLines = s.followups.map((f) => `- ${f}`).join('\n');
   return [
     section('HOOK', s.hook),
-    section('MISTAKE', s.mistake),
-    section('CORRECTION', s.correction),
-    section('TIP', s.tip),
+    section('THEY SAY', s.they_say),
+    section('FOLLOW-UPS', followupLines),
+    section('END', s.end),
   ].join('\n\n');
 }
 

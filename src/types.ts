@@ -21,8 +21,8 @@ export interface T2Script {
   format: 'T2';
   batch: string;
   hook: string;
-  setup: string;
-  after: string[];
+  before: [string, string, string];
+  after: [string, string, string];
   closer: string;
   estimatedDuration: number;
   score?: number;
@@ -35,9 +35,9 @@ export interface S1Script {
   format: 'S1';
   batch: string;
   hook: string;
-  struggle: string;
-  solution: string;
-  result: string;
+  line: string;
+  variants: [string, string];
+  end: string;
   estimatedDuration: number;
   score?: number;
   status: ScriptStatus;
@@ -49,9 +49,9 @@ export interface S2Script {
   format: 'S2';
   batch: string;
   hook: string;
-  mistake: string;
-  correction: string;
-  tip: string;
+  they_say: string;
+  followups: [string, string, string];
+  end: string;
   estimatedDuration: number;
   score?: number;
   status: ScriptStatus;
@@ -96,11 +96,11 @@ export function getScriptSegments(script: Script): string[] {
     case 'T1':
       return [script.hook, script.why, script.fix, script.closer];
     case 'T2':
-      return [script.hook, script.setup, ...script.after, script.closer];
+      return [script.hook, ...script.before, ...script.after, script.closer];
     case 'S1':
-      return [script.hook, script.struggle, script.solution, script.result];
+      return [script.hook, script.line, ...script.variants, script.end];
     case 'S2':
-      return [script.hook, script.mistake, script.correction, script.tip];
+      return [script.hook, script.they_say, ...script.followups, script.end];
   }
 }
 

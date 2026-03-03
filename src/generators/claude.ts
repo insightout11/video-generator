@@ -15,35 +15,35 @@ Return ONLY a JSON object with these exact fields:
 }
 Rules: total 40-65 words, practical classroom language, no filler words. Return ONLY valid JSON.`,
 
-  T2: `Generate a TikTok script for an ESL teacher sharing a step-by-step classroom technique.
+  T2: `Generate a TikTok script for an ESL teacher comparing BEFORE vs AFTER participation design.
 Return ONLY a JSON object with these exact fields:
 {
-  "hook": "6-9 word attention-grabbing statement",
-  "setup": "12-18 word context/problem description",
-  "after": ["step 1 (8-12 words)", "step 2 (8-12 words)", "step 3 (8-12 words)"],
-  "closer": "6-9 word memorable closing"
+  "hook": "4-8 word attention-grabbing statement",
+  "before": ["before bullet 1 (4-8 words)", "before bullet 2 (4-8 words)", "before bullet 3 (4-8 words)"],
+  "after": ["after bullet 1 (6-10 words)", "after bullet 2 (6-10 words)", "after bullet 3 (6-12 words)"],
+  "closer": "4-8 word mechanic-based closing"
 }
-Rules: at least one "after" bullet MUST contain one of: simultaneous, submit, lock, reveal, countdown, timer, hard stop, spotlight. OR closer must contain "simultaneous responses" or "lock then reveal". Total 45-65 words. Return ONLY valid JSON.`,
+Rules: at least one "after" bullet MUST contain one of: simultaneous, submit, lock, reveal, countdown, timer, hard stop, spotlight. OR closer must contain "simultaneous responses" or "lock then reveal". Total 35-60 words. No generic platitudes. Return ONLY valid JSON.`,
 
-  S1: `Generate a TikTok script from an ESL student sharing a personal learning story.
+  S1: `Generate a TikTok script that teaches an ESL conversation rescue line.
 Return ONLY a JSON object with these exact fields:
 {
-  "hook": "8-12 word relatable opening about a past struggle",
-  "struggle": "10-15 word description of the specific problem",
-  "solution": "10-15 word description of what changed",
-  "result": "8-12 word description of the positive outcome"
+  "hook": "4-8 word hook",
+  "line": "the main rescue line (5-10 words)",
+  "variants": ["variant 1 (4-10 words)", "variant 2 (4-10 words)"],
+  "end": "short closing (3-8 words)"
 }
-Rules: total 40-55 words, first-person voice, specific and practical. Return ONLY valid JSON.`,
+Rules: total 20-45 words. Conversational, globally understandable. Return ONLY valid JSON.`,
 
-  S2: `Generate a TikTok script from an ESL student sharing a learning mistake and correction.
+  S2: `Generate a TikTok script that teaches follow-up questions to keep a conversation going.
 Return ONLY a JSON object with these exact fields:
 {
-  "hook": "7-10 word attention-grabbing opener about a mistake",
-  "mistake": "10-14 word description of the wrong approach",
-  "correction": "11-15 word description of the right approach",
-  "tip": "11-15 word actionable daily tip"
+  "hook": "4-8 word hook",
+  "they_say": "a short quote of what someone says",
+  "followups": ["follow-up question 1", "follow-up question 2", "follow-up question 3"],
+  "end": "short closing (3-8 words)"
 }
-Rules: total 40-55 words, first-person voice, specific and actionable. Return ONLY valid JSON.`,
+Rules: total 20-50 words. Follow-ups must be real questions. Return ONLY valid JSON.`,
 };
 
 interface AnthropicResponse {
@@ -76,15 +76,17 @@ function parseScriptFromText(format: Format, text: string, id: string, batch: st
       return s;
     }
     case 'T2': {
+      const beforeRaw = parsed.before;
       const afterRaw = parsed.after;
-      const after = Array.isArray(afterRaw) ? afterRaw.map(String) : [];
+      const before = (Array.isArray(beforeRaw) ? beforeRaw.map(String) : []) as string[];
+      const after = (Array.isArray(afterRaw) ? afterRaw.map(String) : []) as string[];
       const s = {
         id,
         format: 'T2' as const,
         batch,
         hook: String(parsed.hook ?? ''),
-        setup: String(parsed.setup ?? ''),
-        after,
+        before: [String(before[0] ?? ''), String(before[1] ?? ''), String(before[2] ?? '')] as [string, string, string],
+        after: [String(after[0] ?? ''), String(after[1] ?? ''), String(after[2] ?? '')] as [string, string, string],
         closer: String(parsed.closer ?? ''),
         estimatedDuration: 0,
         status: 'draft' as const,
@@ -94,14 +96,16 @@ function parseScriptFromText(format: Format, text: string, id: string, batch: st
       return s;
     }
     case 'S1': {
+      const variantsRaw = parsed.variants;
+      const variants = (Array.isArray(variantsRaw) ? variantsRaw.map(String) : []) as string[];
       const s = {
         id,
         format: 'S1' as const,
         batch,
         hook: String(parsed.hook ?? ''),
-        struggle: String(parsed.struggle ?? ''),
-        solution: String(parsed.solution ?? ''),
-        result: String(parsed.result ?? ''),
+        line: String(parsed.line ?? ''),
+        variants: [String(variants[0] ?? ''), String(variants[1] ?? '')] as [string, string],
+        end: String(parsed.end ?? ''),
         estimatedDuration: 0,
         status: 'draft' as const,
         createdAt: now,
@@ -110,14 +114,16 @@ function parseScriptFromText(format: Format, text: string, id: string, batch: st
       return s;
     }
     case 'S2': {
+      const followupsRaw = parsed.followups;
+      const followups = (Array.isArray(followupsRaw) ? followupsRaw.map(String) : []) as string[];
       const s = {
         id,
         format: 'S2' as const,
         batch,
         hook: String(parsed.hook ?? ''),
-        mistake: String(parsed.mistake ?? ''),
-        correction: String(parsed.correction ?? ''),
-        tip: String(parsed.tip ?? ''),
+        they_say: String(parsed.they_say ?? ''),
+        followups: [String(followups[0] ?? ''), String(followups[1] ?? ''), String(followups[2] ?? '')] as [string, string, string],
+        end: String(parsed.end ?? ''),
         estimatedDuration: 0,
         status: 'draft' as const,
         createdAt: now,
